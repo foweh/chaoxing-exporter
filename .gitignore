@@ -1,0 +1,13 @@
+# 忽略生成的 Excel 文件
+*.xlsx
+~$*.xlsx
+
+# 忽略页面资源文件夹
+吉林农业科技学院智慧学工_files/
+
+# 忽略 HTML 页面文件
+吉林农业科技学院智慧学工.html
+
+# 忽略 Python 缓存
+__pycache__/
+*.pyc
