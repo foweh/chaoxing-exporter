@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>📝 题目练习</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: "Microsoft YaHei", "PingFang SC", sans-serif; max-width: 820px; margin: 0 auto; padding: 20px; background: #f0f2f5; }
+h1 { text-align: center; color: #1a73e8; margin: 20px 0 8px; font-size: 24px; }
+.subtitle { text-align: center; color: #888; font-size: 14px; margin-bottom: 24px; }
+
+.controls { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-bottom: 20px; }
+.controls button {
+    padding: 8px 20px; border: none; border-radius: 6px; font-size: 14px; cursor: pointer;
+    background: #e8e8e8; color: #333; transition: all 0.2s;
+}
+.controls button:hover { transform: translateY(-1px); }
+.controls .active { background: #1a73e8; color: #fff; }
+.controls .active-all { background: #1a73e8; color: #fff; }
+
+.quiz-card {
+    background: #fff; border-radius: 12px; padding: 20px 24px; margin: 16px 0;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.08); transition: all 0.2s;
+}
+.quiz-card.hidden { display: none; }
+.quiz-card .header { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+.tag {
+    display: inline-block; padding: 2px 12px; border-radius: 12px; font-size: 12px; font-weight: bold;
+}
+.tag-danxuan { background: #e3f2fd; color: #1565c0; }
+.tag-duoxuan { background: #fce4ec; color: #c62828; }
+.tag-panduan { background: #e8f5e9; color: #2e7d32; }
+.tag-tiankong { background: #f3e5f5; color: #6a1b9a; }
+.tag-jianda { background: #fff3e0; color: #e65100; }
+
+.question { font-size: 16px; line-height: 1.8; color: #222; margin-bottom: 14px; }
+.question img { max-width: 100%; border-radius: 6px; margin: 8px 0; }
+
+.options { display: flex; flex-direction: column; gap: 6px; }
+.option {
+    padding: 10px 14px; border-radius: 8px; border: 2px solid #e0e0e0;
+    cursor: pointer; transition: all 0.2s; font-size: 15px; line-height: 1.6;
+}
+.option:hover { border-color: #90caf9; background: #f5f9ff; }
+.option.selected { border-color: #1a73e8; background: #e3f2fd; }
+.option.correct { border-color: #4caf50; background: #e8f5e9; }
+.option.wrong { border-color: #f44336; background: #ffebee; }
+
+.answer-section { margin-top: 12px; }
+.show-answer-btn {
+    background: #ff9800; color: #fff; border: none; padding: 6px 18px;
+    border-radius: 6px; cursor: pointer; font-size: 13px; transition: all 0.2s;
+}
+.show-answer-btn:hover { background: #f57c00; }
+.answer-content {
+    margin-top: 8px; padding: 12px 16px; background: #fff8e1;
+    border-radius: 8px; border-left: 4px solid #ff9800; display: none;
+    font-size: 15px; line-height: 1.6;
+}
+.answer-content.show { display: block; }
+.answer-content .correct-text { color: #e65100; font-weight: bold; }
+
+.stats {
+    position: sticky; top: 10px; background: rgba(255,255,255,0.95);
+    backdrop-filter: blur(10px); border-radius: 10px; padding: 12px 20px;
+    margin-bottom: 16px; display: flex; justify-content: space-between;
+    align-items: center; box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    font-size: 14px; z-index: 100;
+}
+.stats span { color: #666; }
+.stats strong { color: #1a73e8; }
+</style>
+</head>
+<body>
+
+<h1>📝 章节测验练习</h1>
+<p class="subtitle" id="subtitle">点击选项作答 · 点击「显示答案」查看正确答案 · 按 <kbd>A</kbd> 全部展开</p>
+
+<div class="stats" id="stats">
+    <span>共 <strong id="totalCount">0</strong> 题</span>
+    <span>已答 <strong id="answeredCount">0</strong> 题</span>
+    <span>正确 <strong id="correctCount">0</strong> 题</span>
+</div>
+
+<div class="controls">
+    <button onclick="filter('all')" class="active" id="filter-all">全部</button>
+    <button onclick="filter('danxuan')" id="filter-danxuan">单选题</button>
+    <button onclick="filter('duoxuan')" id="filter-duoxuan">多选题</button>
+    <button onclick="filter('panduan')" id="filter-panduan">判断题</button>
+    <button onclick="filter('tiankong')" id="filter-tiankong">填空题</button>
+    <button onclick="showAllAnswers()" style="background:#ff9800;color:#fff;">全部显示答案</button>
+    <button onclick="hideAllAnswers()" style="background:#666;color:#fff;">全部隐藏答案</button>
+</div>
+
+<div id="quizList"></div>
+
+<script>
+// ====== 这里放你收集的题目数据 ======
+var allQuestions = %%QUIZ_DATA%%;
+// ====================================
+
+var currentFilter = 'all';
+var stats = { total: 0, answered: 0, correct: 0 };
+
+var typeMap = {
+    '1': { name: '单选题', cls: 'danxuan' },
+    '2': { name: '多选题', cls: 'duoxuan' },
+    '3': { name: '判断题', cls: 'panduan' },
+    '4': { name: '填空题', cls: 'tiankong' },
+    '5': { name: '简答题', cls: 'jianda' }
+};
+
+// 选项字母
+function getLabel(i) { return String.fromCharCode(65 + i); }
+
+// 判断正确答案
+function isCorrectAnswer(question, selected) {
+    var answer = question.answer || '';
+    if (question.type === '3') {
+        return selected === (answer === '对' || answer === '正确' || answer === 'A' ? 'A' : 'B');
+    }
+    if (question.type === '4') return true; // 填空不判断
+    if (question.type === '5') return true; // 简答不判断
+    var correctOptions = answer.split('').map(function(c) { return c.toUpperCase(); }).sort().join('');
+    var selectedOptions = selected.sort().join('');
+    return correctOptions === selectedOptions;
+}
+
+function render() {
+    var list = document.getElementById('quizList');
+    var html = '';
+    var total = 0;
+
+    allQuestions.forEach(function(q, idx) {
+        var typeInfo = typeMap[q.type] || { name: '未知', cls: '' };
+        var tagCls = 'tag-' + typeInfo.cls;
+        var display = (currentFilter === 'all' || currentFilter === typeInfo.cls) ? '' : 'hidden';
+        if (!display) total++;
+
+        html += '<div class="quiz-card ' + display + '" data-index="' + idx + '">';
+        html += '<div class="header"><span class="tag ' + tagCls + '">' + typeInfo.name + '</span>';
+        html += '<span style="color:#999;font-size:12px;">#' + (idx + 1) + '</span></div>';
+
+        // 题目内容（把图片、公式转义）
+        var qText = q.question || '';
+        html += '<div class="question">' + qText + '</div>';
+
+        html += '<div class="options" data-idx="' + idx + '">';
+
+        var options = q.options || [];
+        if (q.type === '3') {
+            // 判断题
+            options = ['A. 正确', 'B. 错误'];
+        }
+
+        options.forEach(function(opt, oi) {
+            var letter = getLabel(oi);
+            html += '<div class="option" data-idx="' + idx + '" data-opt="' + letter + '" onclick="selectOption(this)">';
+            html += '<strong>' + letter + '.</strong> ' + opt;
+            html += '</div>';
+        });
+
+        html += '</div>'; // options
+
+        html += '<div class="answer-section">';
+        html += '<button class="show-answer-btn" onclick="toggleAnswer(this)">显示答案</button>';
+        html += '<div class="answer-content">';
+        html += '<span class="correct-text">✅ 正确答案：</span>' + (q.answer || '略');
+        if (q.analysis) html += '<br><span style="color:#666;font-size:13px;">📖 解析：' + q.analysis + '</span>';
+        html += '</div></div>';
+
+        html += '</div>'; // quiz-card
+    });
+
+    list.innerHTML = html;
+
+    // 恢复已选状态
+    // (每次重新渲染时已选状态会丢失，可以改进)
+    document.getElementById('totalCount').textContent = allQuestions.length;
+    updateStats();
+}
+
+function selectOption(el) {
+    var idx = parseInt(el.getAttribute('data-idx'));
+    var q = allQuestions[idx];
+    var opt = el.getAttribute('data-opt');
+
+    if (q.type === '1' || q.type === '3') {
+        // 单选 / 判断
+        var siblings = el.parentElement.querySelectorAll('.option');
+        siblings.forEach(function(s) { s.classList.remove('selected', 'correct', 'wrong'); });
+        el.classList.add('selected');
+
+        // 自动判断对错
+        var isCorrect = isCorrectAnswer(q, [opt]);
+        if (isCorrect) {
+            el.classList.add('correct');
+        } else {
+            el.classList.add('wrong');
+            // 标出正确选项
+            siblings.forEach(function(s) {
+                var o = s.getAttribute('data-opt');
+                if (isCorrectAnswer(q, [o])) s.classList.add('correct');
+            });
+        }
+    } else if (q.type === '2') {
+        // 多选 — 切换选择
+        el.classList.toggle('selected');
+    }
+
+    updateStats();
+}
+
+function toggleAnswer(btn) {
+    var content = btn.nextElementSibling;
+    content.classList.toggle('show');
+    btn.textContent = content.classList.contains('show') ? '隐藏答案' : '显示答案';
+}
+
+function showAllAnswers() {
+    document.querySelectorAll('.answer-content').forEach(function(el) { el.classList.add('show'); });
+    document.querySelectorAll('.show-answer-btn').forEach(function(el) { el.textContent = '隐藏答案'; });
+}
+
+function hideAllAnswers() {
+    document.querySelectorAll('.answer-content').forEach(function(el) { el.classList.remove('show'); });
+    document.querySelectorAll('.show-answer-btn').forEach(function(el) { el.textContent = '显示答案'; });
+}
+
+function filter(type) {
+    currentFilter = type;
+    document.querySelectorAll('.controls button').forEach(function(b) { b.classList.remove('active'); });
+    var btn = document.getElementById('filter-' + type) || document.getElementById('filter-all');
+    if (btn) btn.classList.add('active');
+    render();
+}
+
+function updateStats() {
+    var answered = document.querySelectorAll('.option.selected').length > 0 ?
+        document.querySelectorAll('.quiz-card:not(.hidden)').length : 0;
+    // 简单统计
+}
+
+// 键盘快捷键
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'a' || e.key === 'A') {
+        showAllAnswers();
+    }
+    if (e.key === 'h' || e.key === 'H') {
+        hideAllAnswers();
+    }
+});
+
+render();
+</script>
+</body>
+</html>

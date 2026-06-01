@@ -1,0 +1,59 @@
+.selectBoxLang ul li{
+    position: relative;
+}
+.language_tips{
+    width:14px;
+    height: 14px;
+    background:url(../../../images/codemirror/phyton_tips.png) no-repeat;
+    background-size: 100% 100%;
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    cursor: pointer;
+}
+.language_tips:hover{
+    background:url(../../../images/codemirror/phyton_tipsHover.png) no-repeat;
+    background-size: 100% 100%;
+}
+.phyton_center{
+    padding:20px 30px;
+    height: 400px;
+    overflow: auto;
+    box-sizing: border-box;
+}
+.phyton_center th{
+    padding:10px 20px;
+    background:#F2F4F7;
+    font-weight: normal;
+    font-size:14px;
+    color:#8A8B99
+}
+.phyton_center td{
+    padding:10px 20px;
+    font-size:14px;
+    color:#131B26
+}
+
+.maskTipDiv{
+    z-index:1001
+}
+
+.maskTipDiv .popDiv{
+    top:50%;
+    left:50%;
+    transform: translate(-50%, -50%);
+}
+
+.maskTipDiv .popBottom a {
+    margin-right: 30px;
+    display: inline-block;
+    text-align: center;
+    line-height: 36px;
+    border-radius: 20px;
+    width: 92px;
+    height: 36px;
+    font-size: 14px;
+    color:#3A8BFF;
+    border: 1px solid #8CBCFF;
+}

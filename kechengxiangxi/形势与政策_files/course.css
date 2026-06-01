@@ -1,0 +1,143 @@
+content *{
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: PingFang SC;
+}
+
+.flex {
+    display: flex;
+    align-items: center;
+}
+
+.content {
+    min-height: 100vh;
+    padding: 20px;
+    box-sizing: border-box;
+    background: linear-gradient(to right, #F0F6FF, #EAF0FE, #E3F2FC, #F8F0F3);
+}
+
+.box-cont {
+    padding: 0 30px 24px;
+    border-radius: 8px;
+    backdrop-filter: blur(4px);
+    background-color: #fff;
+    margin-bottom: 16px;
+}
+
+.header {
+    justify-content: space-between;
+    padding: 24px 0;
+}
+
+.header .box-title {
+    position: relative;
+    font-size: 18px;
+    font-weight: bold;
+    color: #131B26;
+}
+
+.header .box-title::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    width: 75px;
+    height: 6px;
+    border-radius: 98px;
+    background: linear-gradient(to right, #B2DEFF, #fff);
+    z-index: -1;
+}
+
+.header span {
+    display: inline-block;
+    font-size: 12px;
+    color: #fff;
+    font-weight: 500;
+    height: 24px;
+    padding: 3px 6px;
+    background-color: #FFAF40;
+    border-radius: 4px;
+    margin-left: 9px;
+    box-sizing: border-box;
+}
+
+.more {
+    position: relative;
+    font-size: 14px;
+    color: #3A8BFF;
+    padding-right: 16px;
+    cursor: pointer;
+}
+.more::after {
+    position: absolute;
+    right: 0;
+    top: 4px;
+    display: inline-block;
+    content: '';
+    width: 12px;
+    height: 12px;
+    background-image: url(../images/blueRight.png);
+    background-size: cover;
+}
+.course-list {
+    flex-wrap: wrap;
+    gap: 15px;
+}
+.course-list li {
+    align-items: flex-start;
+    flex-basis: calc(20% - 12px);
+    padding: 20px;
+    border-radius: 16px;
+    background-color: #E9F5FF80;
+    box-sizing: border-box;
+}
+.course-list li img {
+    width: 50px;
+    height: 50px;
+}
+.course-detail {
+    align-items: flex-start;
+    flex-direction: column;
+    flex: 1;
+}
+.course-detail > p  {
+    height: 48px;
+    line-height: 24px;
+    color: #131B26;
+    font-size: 16px;
+    font-weight: 500;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    overflow: hidden;
+}
+.course-detail span {
+    display: inline-block;
+    font-size: 12px;
+    color: #8A8B99;
+    font-weight: 400;
+    padding-left: 20px;
+    margin-top: 6px;
+    background: url(../images/time_ic.png) no-repeat;
+    background-size: 14px 14px;
+    background-position-y: 1px;
+    white-space: nowrap;
+}
+.course-detail.flex > .tag{
+    position: absolute;
+    border-radius: 8px;
+    top: 2px;
+    left: 10px;
+}
+.active-img {
+    position: relative;
+    top: -15px;
+    width: 84px;
+    height: 84px;
+    overflow: hidden;
+}
+.active-img >div {
+    transform: scale(0.6);
+    border-radius: 8px;
+}

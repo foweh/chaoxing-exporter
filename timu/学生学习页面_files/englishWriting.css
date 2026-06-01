@@ -1,0 +1,44 @@
+@charset "utf-8";
+
+.newAnswer26 {
+    margin: 10px 20px;
+    position: relative;
+    width: 700px;
+    border: 1px solid #E1EAF4;
+    border-radius: 8px;
+}
+
+.textarea26 {
+    width: 700px;
+    height: 400px;
+    border-radius: 8px;
+    background: #fff;
+    box-sizing: border-box;
+    padding: 10px;
+    font-size: 14px;
+    font-family: microsoft YaHei;
+    line-height: 1.6
+}
+
+.newAnswer26:hover, .newAnswer26:focus {
+    border-color: #3A8BFF
+}
+
+.fontNumBx26 {
+    color: #999;
+    font-size: 14px;
+    width: 678px;
+    box-sizing: border-box;
+    text-align: right;
+    padding: 15px 20px;
+}
+
+.newAnswer26 textarea {
+    vertical-align: middle;
+    border: none;
+    border: 0;
+    outline: none;
+    resize: none;
+}
+
+.wordStyleTit{font-size: 14px;font-weight: 500;color:#F28C24;margin: 0 20px;}

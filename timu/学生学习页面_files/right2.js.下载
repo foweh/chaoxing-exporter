@@ -1,0 +1,129 @@
+$(function() {
+	$("#ZyBottom .TiMu .before").click(function() {
+			var li = $(this).parent();
+			var prefunction = li.attr('prefunction') || '';
+			if(prefunction && typeof(window[prefunction]) == 'function'){
+				 if(!window[prefunction](this)){
+					 return false;
+				}
+			}
+			$(this).parents("ul").find("input").each(function(){ 
+				var temp=$(this).attr("checked");
+				if(temp=="checked"){
+					$(this).parent().parent().addClass("Hover");
+				}else{
+					$(this).parent().parent().removeClass("Hover");
+				}
+				});
+				
+	});
+
+	// 回车事件 单选
+	$("#ZyBottom .TiMu .before-after").keydown(function(event) {
+		var isAccessibleCustomFid = $("#isAccessibleCustomFid").val()
+		if (!isAccessibleCustomFid || isAccessibleCustomFid != "1") {
+			return;
+		}
+		if (event.keyCode == 13 || event.keyCode == 32){
+			//input 操作
+			var input=$(this).find("input");
+			var checked=$(input).attr("checked");
+			if(!checked){
+				$(input).attr("checked",true);
+			}else{
+				if($(input).attr("type")=="checkbox"){
+					$(input).attr("checked",false);
+				}
+			}
+
+			// 无障碍操作
+			$(this).siblings("li").each(function(){
+				var input=$(this).find("input");
+				$(input).attr("checked",false);
+				$(this).removeAttr("aria-checked");
+				$(this).removeAttr("aria-pressed");
+			});
+
+			//样式操作
+			$(this).parents("ul").find("input").each(function(){
+				var temp=$(this).attr("checked");
+				if(temp=="checked"){
+					$(this).parent().parent().addClass("Hover");
+					$(this).parent().parent().attr("aria-checked","true");
+					$(this).parent().parent().attr("aria-pressed","true");
+				}else{
+					$(this).parent().parent().removeClass("Hover");
+					$(this).parent().parent().removeAttr("aria-checked");
+					$(this).parent().parent().removeAttr("aria-pressed");
+				}
+			});
+			
+		}
+	});
+
+	// 回车事件 多选
+	$("#ZyBottom .TiMu .before-after-checkbox").keydown(function(event) {
+		var isAccessibleCustomFid = $("#isAccessibleCustomFid").val()
+		if (!isAccessibleCustomFid || isAccessibleCustomFid != "1") {
+			return;
+		}
+		if (event.keyCode == 13 || event.keyCode == 32){
+			//input 操作
+			var input=$(this).find("input");
+			var checked=$(input).attr("checked");
+			if(!checked){
+				$(input).attr("checked",true);
+			}else{
+				if($(input).attr("type")=="checkbox"){
+					$(input).attr("checked",false);
+				}
+			}
+
+			//样式操作
+			$(this).parents("ul").find("input").each(function(){
+				var temp=$(this).attr("checked");
+				if(temp=="checked"){
+					$(this).parent().parent().addClass("Hover");
+					$(this).parent().parent().attr("aria-checked","true");
+					$(this).parent().parent().attr("aria-pressed","true");
+				}else{
+					$(this).parent().parent().removeClass("Hover");
+					$(this).parent().parent().removeAttr("aria-checked");
+					$(this).parent().parent().removeAttr("aria-pressed");
+				}
+			});
+
+		}
+	});
+	
+	$("#ZyBottom .TiMu .after").click(function() {
+		var li = $(this).parent();
+		var prefunction = li.attr('prefunction') || '';
+		if(prefunction && typeof(window[prefunction]) == 'function'){
+			 if(!window[prefunction](this)){
+				 return false;
+			}
+		}
+		//input 操作
+		 var input=$(this).prev().find("input");
+			var checked=$(input).attr("checked");
+			if(!checked){
+				$(input).attr("checked",true);
+			}else{
+				if($(input).attr("type")=="checkbox"){
+					$(input).attr("checked",false);
+				}
+			}
+			
+			//样式操作
+			$(this).parents("ul").find("input").each(function(){ 
+				var temp=$(this).attr("checked");
+				if(temp=="checked"){
+					$(this).parent().parent().addClass("Hover");
+				}else{
+					$(this).parent().parent().removeClass("Hover");
+				}
+				});
+	});
+	
+});

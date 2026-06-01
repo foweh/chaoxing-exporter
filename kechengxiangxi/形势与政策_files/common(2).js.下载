@@ -1,0 +1,710 @@
+// 用于一些公共方法，变量
+
+// 美化滚动条的设置参数
+var customScroll = {
+    cursorborder: "",
+    cursorwidth: 8,
+    cursorcolor: "#CAD5E6",
+    boxzoom: false,
+    autohidemode: true,
+    railpadding: {top: 0, right: 2, left: 0, bottom: 0}
+};
+
+//查看图片时，放大的比例
+var proportion = 100;
+
+$.loading = {
+    start: function () {
+        var html = "<div class=\"pop-loading\">\n" +
+            "    <img class=\"img-loading\" src=\""+_CP_xinfanya_+"/xinfanya/images/common/loading.gif\" alt=\"\">\n" +
+            "</div>";
+        $('body').append(html);
+        $('body').addClass('popOverflow');
+    },
+    end: function () {
+        $('.pop-loading').remove();
+        $('body').removeClass('popOverflow');
+    }
+}
+
+
+//禁止滚动条滚动
+function unScroll() {
+    $('body').addClass('popOverflow');
+    // var top = $(document).scrollTop();
+    // $(document).on('scroll.unable', function (e) {
+    //     $(document).scrollTop(top);
+    // })
+}
+
+//移除禁止
+function removeUnScroll() {
+    // $(document).unbind("scroll.unable");
+    $('body').removeClass('popOverflow');
+}
+
+
+// 关闭弹框
+function closePop() {
+    $(".popClose,.closePop").on("click", function () {
+        // 排除掉某些离开需要提示的关闭
+        if (!$(this).parents(".popDiv").hasClass("custom-close")) {
+            $(this).parents(".maskDiv").fadeOut();
+            $(this).parents(".maskDiv-base").fadeOut();
+            removeUnScroll();
+        }
+    })
+}
+
+//显示弹框
+function showPop(node) {
+    $(node).fadeIn();
+    unScroll();
+}
+
+//关闭弹框2
+function closePop2(node) {
+    $(node).fadeOut();
+    //$(".tab-body .list>li").css("background","");
+    if(vm){
+        vm.clickUid = "";
+    }
+    removeUnScroll();
+}
+
+//关闭弹框3
+function closePop3(node) {
+    $(node).fadeOut();
+    removeUnScroll();
+}
+
+//tab切换
+function initTab(parent, changeBack, x) {
+    var _index = x || 1;
+    $(parent).find('.tab-head .tab-t').removeClass('current');
+    $(parent).find('.tab-head .tab-t').eq(_index - 1).addClass('current');
+    $(parent).find('.tab-list').hide();
+    $(parent).find('.tab-list').eq(_index - 1).show();
+	$(parent).off('click', '.tab-head .tab-t');
+    $(parent).on('click', '.tab-head .tab-t', function () {
+        if($(this).hasClass("current")){
+            return;
+        }
+        $(this).siblings().removeClass('current');
+        $(this).addClass('current');
+        $(parent).find('.tab-list').hide();
+        var index = $(this).index();
+        $(parent).find('.tab-list').eq(index).show();
+        if (changeBack) {
+            changeBack();
+        }
+    })
+
+}
+
+// 点击弹框区域外，关闭弹框
+function clickBesideClose(triggerObj, popObj) {
+    $(document).on("click", function (event) {
+        if (triggerObj[0] && !triggerObj[0].contains(event.target)) {
+            popObj.slideUp();
+        }
+    })
+}
+
+// 设置main的最小高度
+function setMainHeight(options) {
+    var defaults = {
+        target: $(".main"),
+        height: 112 // 112为main上下的margin的高度
+    };
+    var sets = $.extend(defaults, options || {});
+    var windowH = $(window).height();
+    var height = windowH - sets.height;
+    sets.target.css("min-height", height);
+
+    // 窗口resize,内容高度优化
+    $(window).resize(function () {
+        setTimeout(function () {
+            windowH = $(window).height();
+            height = windowH - sets.height; // 112为main上下的margin的高度
+            sets.target.css("min-height", height);
+        }, 50);
+    });
+}
+
+// 设置x 的最大高度
+function setHeight(options) {
+    var defaults = {
+        type: 'height',
+        target: $(".main"),
+        height: 112 // 112为main上下的margin的高度
+    };
+    var sets = $.extend(defaults, options || {});
+    var windowH = $(window).height();
+    var height = windowH - sets.height;
+    sets.target.css(sets.type, height);
+
+    // 窗口resize,内容高度优化
+    $(window).resize(function () {
+        setTimeout(function () {
+            windowH = $(window).height();
+            height = windowH - sets.height; // 112为main上下的margin的高度
+            sets.target.css(sets.type, height);
+            sets.target.getNiceScroll().resize()
+        }, 50);
+    });
+}
+
+//查看大图--班级活动列表，创建选人，抢答，评分等活动弹窗时，添加图片后，点击图片走这个创建图片查看器方法--还有拍照签到的详情页也走这个方法
+function initLookBigImg(box,fromActiveList) {
+    addBtnWrap();
+    $('body').on('click', box + ' img', function () {
+        var index = 0;
+        if(fromActiveList==1){
+            index =  $(this).parent("li").index();
+        }else{
+            index =  $(this).index();
+        }
+        $(box).viewer({
+            navbar: false,
+            url: 'data-orignal',
+            title: false,
+            toolbar: false,
+        });
+        viewer = $(this).parents(box).data('viewer');
+        viewer.index = index;
+        viewer.show();
+        // $('.viewBtnWrap').fadeIn();
+        $('.viewBtnWrap').fullFadeIn();
+        if(fromActiveList==1){
+            $(".viewer-container").css("background-color","rgba(53,61,72,1)");
+            setTimeout(function(){
+                $(".popDiv").css("transform","unset")
+            },300)
+        }
+        //设置当前是第几张图片，即图片下标
+        $('.viewBtnWrap').find("#viewPageNum").find("#imgIndex").text(Number(index)+1);
+        //设置总共有多少图片，即图片总数
+        let imgNumber = $(this).parent(".top-img-list").find("img").length;
+        if(!imgNumber || imgNumber == 0){
+            //这里是创建选人活动时添加图片，然后点击查看，获取图片总数
+            imgNumber = $(this).parents(".img-list").find("i.icon-del-img").length;
+        }
+        if(!imgNumber || imgNumber == 0){
+            //这里是创建主题讨论时添加图片，然后点击查看，获取图片总数
+            imgNumber = $(this).parents(".img-list").find("i.icon-del-img").length;
+        }
+        if(!imgNumber || imgNumber == 0){
+            //都打开图片查看器查看图片了，默认有一张图片
+            imgNumber = 1;
+        }
+        $('.viewBtnWrap').find("#viewPageNum").find("#imgNumber").text(Number(imgNumber));
+        unactiveViewBtn();
+    })
+    //    上一张
+    $("#viewPrev").on("click", function () {
+        viewer.prev();
+        unactiveViewBtn();
+        //设置当前是多少页
+        let content = $('.viewBtnWrap').find("#viewPageNum").find("#imgIndex").text();
+        //如果当前页大于等于2，则点击上一张时当前页码数减1
+        if(Number(content) >= 2){
+            //恢复图片放大比例
+            proportion = 100;
+            $('.viewBtnWrap').find(".proportion_div").find("#proportion").text(proportion+"%");
+            //页码数字减1
+            $('.viewBtnWrap').find("#viewPageNum").find("#imgIndex").text(Number(content) - 1);
+        }
+    })
+    //    下一张
+    $("#viewNext").on("click", function () {
+        viewer.next();
+        unactiveViewBtn();
+        //设置当前是多少页
+        let content = $('.viewBtnWrap').find("#viewPageNum").find("#imgIndex").text();
+        let imgNumber = $(".viewBtnWrap").find("#viewPageNum").find("#imgNumber").text();
+        //如果当前页小于总页数，则点击下一张时当前页码数加1
+        if(Number(content) < Number(imgNumber)){
+            //恢复图片放大比例
+            proportion = 100;
+            $('.viewBtnWrap').find(".proportion_div").find("#proportion").text(proportion+"%");
+            //页码数字加1
+            $('.viewBtnWrap').find("#viewPageNum").find("#imgIndex").text(Number(content) + 1);
+        }
+    })
+    //    放大
+    $("#viewZoomIn").on("click", function () {
+        viewer.zoom(0.1);
+        proportion = proportion + 10;
+        $('.viewBtnWrap').find(".proportion_div").find("#proportion").text(proportion+"%");
+    })
+    // 缩小
+    $("#viewZoomOut").on("click", function () {
+        viewer.zoom(-0.1);
+        proportion = proportion - 10;
+        $('.viewBtnWrap').find(".proportion_div").find("#proportion").text(proportion+"%");
+    })
+    //    旋转
+    $("#viewFlip").on("click", function () {
+        viewer.rotate(-90);
+    });
+    //    关闭
+    $("body").on("click",".viewer-container",function(){
+        viewer.destroy();
+        $('.viewBtnWrap').fullFadeOut();
+        $(".popDiv").css("transform","translate(-50%, -50%)");
+        proportion = 100;
+        $('.viewBtnWrap').find(".proportion_div").find("#proportion").text(proportion+"%");
+        $('body').removeClass('viewer-open');
+    });
+    $("#viewClose").on("click", function () {
+        viewer.destroy();
+        $('.viewBtnWrap').fullFadeOut();
+        $(".popDiv").css("transform","translate(-50%, -50%)");
+        proportion = 100;
+        $('.viewBtnWrap').find(".proportion_div").find("#proportion").text(proportion+"%");
+        $('body').removeClass('viewer-open');
+    })
+}
+
+//专用于PPT编辑界面查看大图
+function initLookBigImgOfPPT(box) {
+    addBtnWrapOfPPT(0);
+    $('body').on('click', box + ' i', function () {
+        //不让目录弹窗消失
+        $("#stopClickThisPic").val(1);
+        var index = 1;
+        var pageNumIndex = $(this).parents(box).find("input").val();
+        if(pageNumIndex != null && pageNumIndex!= ""){
+            index = pageNumIndex;
+        }
+        $('.top-img-list').viewer({
+            navbar: false,
+            url: 'data-orignal',
+            title: false,
+            toolbar: false,
+        });
+        viewer = $(".top-img-list").data('viewer');
+        viewer.index = index;
+        viewer.show();
+        // $('.viewBtnWrap').fadeIn();
+        //设置当前是多少页
+        $('.viewBtnWrap').find("#viewPageNum").find("#pageNum").text(Number(index)+1);
+        //设置总共有多少页
+        var PPTPageTotal2 = $("#PPTPageTotalInput").val();
+        $('.viewBtnWrap').find("#viewPageNum").find("#PPTPageTotal2").text(Number(PPTPageTotal2));
+        $('.viewBtnWrap').fullFadeIn();
+        unactiveViewBtn();
+    })
+    //    上一张
+    $("#viewPrev").on("click", function () {
+        viewer.prev();
+        unactiveViewBtn();
+        //设置当前是多少页
+        var content = $('.viewBtnWrap').find("#viewPageNum").find("#pageNum").text();
+        //如果当前页大于等于2，则点击上一张时当前页码数减1
+        if(Number(content) >= 2){
+            proportion = 100;
+            $('.viewBtnWrap').find(".proportion_div").find("#proportion").text(proportion+"%");
+            $('.viewBtnWrap').find("#viewPageNum").find("#pageNum").text(Number(content) - 1);
+        }
+
+    })
+    //    下一张
+    $("#viewNext").on("click", function () {
+        viewer.next();
+        unactiveViewBtn();
+        //设置当前是多少页
+        var content = $('.viewBtnWrap').find("#viewPageNum").find("#pageNum").text();
+        var PPTPageTotal2 = $("#PPTPageTotalInput").val();
+        //如果当前页小于总页数，则点击下一张时当前页码数加1
+        if(Number(content) < Number(PPTPageTotal2)){
+            proportion = 100;
+            $('.viewBtnWrap').find(".proportion_div").find("#proportion").text(proportion+"%");
+            $('.viewBtnWrap').find("#viewPageNum").find("#pageNum").text(Number(content) + 1);
+        }
+    })
+    //    放大
+    $("#viewZoomIn").on("click", function () {
+        viewer.zoom(0.1);
+        proportion = proportion + 10;
+        $('.viewBtnWrap').find(".proportion_div").find("#proportion").text(proportion+"%");
+    })
+    // 缩小
+    $("#viewZoomOut").on("click", function () {
+        viewer.zoom(-0.1);
+        proportion = proportion - 10;
+        $('.viewBtnWrap').find(".proportion_div").find("#proportion").text(proportion+"%");
+    })
+    //    旋转
+    $("#viewFlip").on("click", function () {
+        viewer.rotate(-90);
+    });
+    //    关闭
+    $("body").on("click",".viewer-container",function(){
+        viewer.hide();
+        $('.viewBtnWrap').fullFadeOut();
+        $(".popDiv").css("transform","translate(-50%, -50%)");
+        $("#stopClickThisPic").val(0);
+        proportion = 100;
+        $('.viewBtnWrap').find(".proportion_div").find("#proportion").text(proportion+"%");
+    });
+    $("#viewClose").on("click", function () {
+        viewer.hide();
+        $('.viewBtnWrap').fullFadeOut();
+        $(".popDiv").css("transform","translate(-50%, -50%)");
+        $("#stopClickThisPic").val(0);
+        proportion = 100;
+        $('.viewBtnWrap').find(".proportion_div").find("#proportion").text(proportion+"%");
+    })
+}
+
+//查看大图for pop
+function initLookBigImgForPop(box,fromActiveList) {
+    addBtnWrap();
+    $('body').on('click', box + ' img', function () {
+        var index = 0;
+        if(fromActiveList==1){
+            index =  $(this).parent("li").index();
+        }else{
+            index =  $(this).index();
+        }
+        $(box).viewer({
+            navbar: false,
+            url: 'data-orignal',
+            title: false,
+            toolbar: false,
+        });
+        viewer = $(this).parents(box).data('viewer');
+        viewer.index = index;
+        viewer.show();
+        // $('.viewBtnWrap').fadeIn();
+        $('.viewBtnWrap').fullFadeIn();
+        if(fromActiveList==1){
+            $(".viewer-container").css("background-color","rgba(53,61,72,1)");
+            setTimeout(function(){
+                $(".popDiv").css("transform","unset")
+            },700)
+        }
+        unactiveViewBtn();
+    })
+    //    上一张
+    $("#viewPrev").on("click", function () {
+        viewer.prev();
+        unactiveViewBtn()
+    })
+    //    下一张
+    $("#viewNext").on("click", function () {
+        viewer.next();
+        unactiveViewBtn()
+    })
+    //    放大
+    $("#viewZoomIn").on("click", function () {
+        viewer.zoom(0.1);
+    })
+    // 缩小
+    $("#viewZoomOut").on("click", function () {
+        viewer.zoom(-0.1);
+    })
+    //    旋转
+    $("#viewFlip").on("click", function () {
+        viewer.rotate(-90);
+    });
+    //    关闭
+    $("body").on("click",".viewer-container",function(){
+        viewer.hide();
+        $('.viewBtnWrap').fullFadeOut();
+        $(".popDiv").css("transform",'');
+        //$(".popDiv").css("transform","translate(-50%, -50%)")
+    });
+    $("#viewClose").on("click", function () {
+        viewer.hide();
+        $('.viewBtnWrap').fullFadeOut();
+        $(".popDiv").css("transform",'');
+        //$(".popDiv").css("transform","translate(-50%, -50%)")
+    })
+}
+
+function initLookBigImgForPopV2(box,fromActiveList) {
+    addBtnWrap();
+    $('body').on('click', box + ' img', function () {
+        var index = 0;
+        if(fromActiveList==1){
+            index =  $(this).parent("li").index();
+        }else{
+            index =  $(this).index();
+        }
+        $(box).viewer({
+            navbar: false,
+            url: 'data-orignal',
+            title: false,
+            toolbar: false,
+        });
+        viewer = $(this).parents(box).data('viewer');
+        viewer.index = index;
+        viewer.show();
+        // $('.viewBtnWrap').fadeIn();
+        $('.viewBtnWrap').fullFadeIn();
+        if(fromActiveList==1){
+            $(".viewer-container").css("background-color","rgba(53,61,72,1)");
+            setTimeout(function(){
+                $(".popDiv").css("transform","unset")
+            },700)
+        }
+        unactiveViewBtn();
+    })
+    //    上一张
+    $("#viewPrev").on("click", function () {
+        viewer.prev();
+        unactiveViewBtn()
+    })
+    //    下一张
+    $("#viewNext").on("click", function () {
+        viewer.next();
+        unactiveViewBtn()
+    })
+    //    放大
+    $("#viewZoomIn").on("click", function () {
+        viewer.zoom(0.1);
+    })
+    // 缩小
+    $("#viewZoomOut").on("click", function () {
+        viewer.zoom(-0.1);
+    })
+    //    旋转
+    $("#viewFlip").on("click", function () {
+        viewer.rotate(-90);
+    });
+    //    关闭
+    $("body").on("click",".viewer-container",function(){
+        viewer.hide();
+        // $('.viewBtnWrap').fullFadeOut();
+        $(".popDiv").css("transform",'');
+        //$(".popDiv").css("transform","translate(-50%, -50%)")
+    });
+    $("#viewClose").on("click", function () {
+        viewer.hide();
+        // $('.viewBtnWrap').fullFadeOut();
+        $(".popDiv").css("transform",'');
+        //$(".popDiv").css("transform","translate(-50%, -50%)")
+    })
+}
+
+//最后一张图片右键头不可点，第一张图片左箭头不可点
+function unactiveViewBtn() {
+    $('#viewPrev').removeClass('unactive');
+    $('#viewNext').removeClass('unactive');
+    // if (viewer.length == 1){
+    //     $('#viewPrev').attr("hidden",true)
+    //     $('#viewNext').attr("hidden",true)
+    // }else {
+    //     $('#viewPrev').attr("hidden",false)
+    //     $('#viewNext').attr("hidden",false)
+    // }
+    if (viewer.index == 0) {
+        $('#viewPrev').addClass('unactive');
+    }
+    if (viewer.index == (viewer.length - 1)) {
+        $('#viewNext').addClass('unactive');
+    }
+}
+
+function addBtnWrap() {
+    var btnWrap = "<div class=\"viewBtnWrap\">\n" +
+        "               <div id=\"viewBtnWrap_div\">\n" +
+        "                   <div class=\"nextPage_div\">\n" +
+        //查看图片的插件的上下翻页按钮
+        "                       <div id=\"viewPrev\"></div>\n" +
+        "                       <div class=\"viewBtn\" id=\"viewPageNum\"><span id='imgIndex'></span>/<span id='imgNumber'></span></div>\n" +
+        "                       <div id=\"viewNext\"></div>\n" +
+        "                   </div>\n" +
+        "                   <div class='proportion_div'>\n"+
+        //查看图片的插件的放大缩小按钮
+        "                       <div class=\"viewBtn\" id=\"viewZoomOut\"></div>\n" +
+        "                       <div ><span id='proportion'>"+proportion+"%</span></div>\n" +
+        "                       <div class=\"viewBtn\" id=\"viewZoomIn\"></div>\n" +
+        "                   </div>\n"+
+        "                   <div>\n"+
+        //查看图片的插件的旋转按钮
+        "                       <div class=\"viewBtn\" id=\"viewFlip\"></div>\n" +
+        "                   </div>\n"+
+        //查看图片的插件的右上角关闭按钮
+        "                   <div class=\"viewBtn\" id=\"viewClose\" style=\"position: fixed; top: 2.5rem;right: 1.5rem;\"></div>\n" +
+        "              </div>\n" +
+        "          </div>";
+    $('body').append(btnWrap);
+}
+
+function addBtnWrapOfPPT() {
+    var btnWrap = "<div class=\"viewBtnWrap\">\n" +
+        "               <div id=\"viewBtnWrap_div\">\n" +
+        "                   <div class='nextPage_div'>\n"+
+        //查看图片的插件的上下翻页按钮
+        "                       <div id=\"viewPrev\"></div>\n" +
+        "                       <div class=\"viewBtn\" id=\"viewPageNum\"><span id='pageNum'></span>/<span id='PPTPageTotal2'></span></div>\n" +
+        "                       <div id=\"viewNext\"></div>\n" +
+        "                   </div>\n" +
+        "                   <div class='proportion_div'>\n"+
+        //查看图片的插件的放大缩小按钮
+        "                       <div class=\"viewBtn\" id=\"viewZoomOut\"></div>\n" +
+        "                       <div><span id='proportion'>"+proportion+"%</span></div>\n" +
+        "                       <div class=\"viewBtn\" id=\"viewZoomIn\"></div>\n" +
+        "                   </div>\n"+
+        "                   <div>\n"+
+        //查看图片的插件的旋转按钮
+        "                       <div class=\"viewBtn\" id=\"viewFlip\"></div>\n" +
+        "                   </div>\n"+
+        //查看图片的插件的右上角关闭按钮
+        "                   <div class=\"viewBtn\" id=\"viewClose\" style=\"position: fixed; top: 2.5rem;right: 1.5rem;\"></div>\n" +
+        "              </div>\n" +
+        "        </div>";
+
+    $('body').append(btnWrap);
+}
+
+$(function ($) {
+    $.fn.extend({
+        fullFadeIn:function(t,e,n,r){
+            top.postMessage('{"cmd":1,"toggle":true}', "*");
+            return this.fadeIn(t,e,n,r);
+        },
+        fullFadeOut:function(t,e,n,r){
+            setTimeout(function(){
+                top.postMessage('{"cmd":1,"toggle":false}', "*");
+            },300);
+            return this.fadeOut(t,e,n,r)
+        }
+    });
+})
+
+//查看大图 end
+
+//活动列表发放的图片查看大图
+function initLookBigImgActive(box) {
+    $('body').on('click', box + ' img', function () {
+        var index = 0;
+            $(box).viewer({
+            navbar: false,
+            url: 'data-orignal',
+            title: false,
+            toolbar: false,
+        });
+        viewer = $(box).data('viewer');
+        viewer.index = index;
+        viewer.show();
+        $('.viewBtnWrap').fullFadeIn();
+        $(".viewer-container").css("background-color","rgba(53,61,72,1)");
+        unactiveViewBtn();
+    })
+    
+}
+function showBigImg(url) {
+    if(typeof(viewer)!="undefined"&&viewer!=null){
+        try {viewer.destroy();}
+        catch(error){}
+        $(".viewer-container").remove();
+    }
+    $("#picCon").html("");
+    $("#picCon").append('<li><img src="'+url+'" alt="图片'+0+'"></li>');
+    $($("#picCon li")[0]).children("img").trigger("click");
+}
+
+//图片裁剪通用方法
+
+function cropImgFun(elem) {
+    var imgs,imgDivArr;
+    if (elem.length == 0) {
+        return
+    }
+    if (elem instanceof jQuery) {
+        imgs = elem.find('.js-crop-img img');
+        imgDivArr = elem.find('.js-crop-img');
+    } else if (typeof (elem) == 'string') {
+        imgs = $(elem).find('.js-crop-img img');
+        imgDivArr = $(elem).find('.js-crop-img');
+    }
+    if (imgs.length == 0) {
+        return
+    }
+    /*兼容切换分类或者分页时，有些数据中没有img但仍保留了之前的裁剪数据情况*/
+    imgDivArr.each(function (){
+        if ($(this).find('img').length == 0) {
+            $(this).find('.jqthumb').remove();
+            return;
+        }
+    })
+    imgs.each(function () {
+        var _class = 'jqthumb '; // 默认class 兼容之前的情况
+        var customClass = $(this).attr("data-className") || '';  //用户自定义的class
+        _class += customClass;
+        if (!!$(this).attr("data-src") && !!!$(this).attr("src")) {
+            $(this).attr("src", $(this).attr("data-src"));
+        }
+        if($(this).siblings(".jqthumb").length>0){
+            var src = $(this).attr("data-src") || $(this).attr("src");
+            $(this).siblings(".jqthumb").find("div").css("background-image","url("+src+")")
+            return
+        }
+        if ($(this).is(':visible') && $(this).attr("src")) {
+            var image = new Image();
+            var $this = $(this);
+            image.src = $(this).attr("src");
+            image.onload = function () {
+                $this.jqthumb({
+                    classname: _class,
+                    width: '100%',
+                    height: '100%',
+                    before: function (img) {
+                        var imgUrl = $(img).attr('src');
+                        var newUrl = imgUrl.replace(/\\/g, "/");
+                        $(img).attr('src', newUrl);
+                    },
+                    done: function (div) {
+                        if ($(div).next().length > 0) {
+                            $(div).next().css("display", "none");
+                        }
+                    }
+                });
+            }
+        }
+    });
+}
+(function($){
+    //标题高度
+    $.fn.autoHeightTextarea = function(options) {
+        var defaults={
+            maxHeight:96,//文本框是否自动撑高,默认:null,不自动撑高;如果自动撑高必须输入数值,该值作为文本框自动撑高的最大高度
+            minHeight:38 //默认最小高度，也就是文本框最初的高度，当内容高度小于这个高度的时候，文本以这个高度显示
+        };
+        var opts = $.extend({},defaults,options);
+        return $(this).each(function() {
+            $(this).unbind("input propertychange focus");
+            $(this).bind("input propertychange focus",function(){
+                var height,style=this.style;
+                this.style.height =  opts.minHeight + 'px'
+                style.overflowY = 'hidden';
+                if (this.scrollHeight > opts.minHeight) {
+                    if (opts.maxHeight && this.scrollHeight > opts.maxHeight) {
+                        height = opts.maxHeight;
+                        style.overflowY = 'scroll';
+                        if ($(this).hasClass("hasPic")){
+                            style.padding= '8px 30px 8px 14px'
+                        }
+                        if ($(this).hasClass("noScroll")){//网页链接的不要滚动条
+                            style.overflowY = 'hidden';
+                        }
+                    }
+                    else {
+                        height = this.scrollHeight;
+                        style.overflowY = 'hidden';
+                        if ($(this).hasClass("hasPic")){
+                            style.padding= '8px 50px 8px 14px'
+                        }
+                    }
+                    style.height = height  + 'px';
+                }
+            });
+        });
+
+    };
+})(jQuery);
