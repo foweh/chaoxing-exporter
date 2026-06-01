@@ -1,13 +1,19 @@
-# 忽略生成的 Excel 文件
+# 生成的文件
 *.xlsx
 ~$*.xlsx
 
-# 忽略页面资源文件夹
-吉林农业科技学院智慧学工_files/
-
-# 忽略 HTML 页面文件
-吉林农业科技学院智慧学工.html
-
-# 忽略 Python 缓存
+# Python 缓存
 __pycache__/
 *.pyc
+
+# 页面资源文件夹（太大，不上传）
+*_files/
+
+# 静态保存的课程页面（大文件，不上传）
+吉林农业科技学院智慧学工.html
+kechengmingdan/
+kechengxiangxi/
+zhangjiexiangxi/
+zhangjieneirpng/
+youhouchajian/
+timu/学生学习页面.html
